@@ -1,26 +1,39 @@
 import React from 'react';
 import { NodeType } from './TreeView';
+import TreeNodeAction from './TreeNodeAction';
+import { useTreeContext } from './TreeContext';
 
 type TreeNodeProps = {
+	parentNode?: NodeType;
 	node: NodeType;
 	childNodes?: NodeType[];
 };
-const TreeNode = ({ node, childNodes }: TreeNodeProps) => {
+const TreeNode = ({ node, childNodes, parentNode }: TreeNodeProps) => {
+	const { activeNodeIdPath } = useTreeContext();
+
 	return (
 		<div>
-			<div>{node.title}</div>
-			{childNodes?.map((childNode, index) => {
-				if (childNode.type === 'folder') {
+			<TreeNodeAction node={node} parentNode={parentNode} />
+			{activeNodeIdPath.findIndex((item) => item === node.id) >= 0 &&
+				childNodes?.map((childNode) => {
+					if (childNode.type === 'folder') {
+						return (
+							<TreeNode
+								key={childNode.id}
+								node={childNode}
+								childNodes={childNode.children}
+								parentNode={node}
+							/>
+						);
+					}
 					return (
-						<TreeNode
-							key={index}
+						<TreeNodeAction
+							key={childNode.id}
 							node={childNode}
-							childNodes={childNode.children}
+							parentNode={node}
 						/>
 					);
-				}
-				return <div key={index}>{childNode.title}</div>;
-			})}
+				})}
 		</div>
 	);
 };
