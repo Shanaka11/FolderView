@@ -2,6 +2,7 @@
 import TreeNode from './TreeNode';
 import { useTreeContext } from './TreeContext';
 import TreeNodeAction from './TreeNodeAction';
+import Breadcrumbs from './Breadcrumbs';
 
 export type Page = {
 	id: number;
@@ -23,10 +24,16 @@ const TreeView = () => {
 
 	if (!Array.isArray(structure)) {
 		// This should be the page viewer
-		return <TreeNodeAction node={structure} />;
+		return (
+			<div>
+				<Breadcrumbs />
+				<TreeNodeAction node={structure} />
+			</div>
+		);
 	}
 	return (
 		<div>
+			<Breadcrumbs />
 			{/* <div>
 				<button>+</button>
 			</div> */}

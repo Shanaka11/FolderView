@@ -6,7 +6,7 @@ export type TreeNodeActionProps = {
 };
 
 const TreeNodeAction = ({ node }: TreeNodeActionProps) => {
-	const { activeNodeId, selectNode, activeNodeIdPath } = useTreeContext();
+	const { activeNodeId, selectNode } = useTreeContext();
 
 	const handleOnClick = () => {
 		selectNode(node.id);
@@ -18,9 +18,6 @@ const TreeNodeAction = ({ node }: TreeNodeActionProps) => {
 			onClick={handleOnClick}
 		>
 			{node.title}
-			{node.type === 'folder' && node.children && node.children?.length > 0 && (
-				<span>{activeNodeIdPath.indexOf(node.id) >= 0 ? ' - ' : ' + '}</span>
-			)}
 		</div>
 	);
 };

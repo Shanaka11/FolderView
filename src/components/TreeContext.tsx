@@ -5,8 +5,8 @@ import { NodeType, Page } from './TreeView';
 type TreeContextType = {
 	structure: NodeType[] | Page;
 	activeNodeId: number | null;
-	selectNode: (id: number) => void;
-	activeNodeIdPath: number[];
+	selectNode: (id: number | null) => void;
+	nodeHistory: NodeType[];
 };
 
 const TreeContext = createContext<TreeContextType | null>(null);
@@ -22,46 +22,62 @@ const TreeContextProvider = ({
 }: TreeContextProviderProps) => {
 	const [activeStructure] = useState<NodeType[]>(structure);
 	const [activeNodeId, setActiveNodeId] = useState<number | null>(null);
-	const [activeNodeIdPath, setActiveNodeIdPath] = useState<number[]>([]);
+	const [nodeHistory, setNodeHistory] = useState<NodeType[]>([]);
 	const [currentStructure, setCurrentStructure] = useState<NodeType[] | Page>(
 		structure
 	);
 
-	const selectNode = (id: number) => {
+	const selectNode = (id: number | null) => {
 		// We get null if we select already selected node, then just pop that
 		if (id === null) {
 			setActiveNodeId(null);
 			// setActiveNodeIdPath((prev) => prev.slice(0, -1));
-			setCurrentStructure(getActiveStructure(null) || []);
+			const activeNode = getActiveStructure(null);
+			if (activeNode === undefined) {
+				setCurrentStructure([]);
+				setNodeHistory([]);
+				return;
+			}
+			setCurrentStructure(activeNode.structure);
+			setNodeHistory(activeNode.path);
 			return;
 		}
 
 		// else we reset the path
 		setActiveNodeId(id);
-		// setActiveNodeIdPath([id]);
-		setCurrentStructure(getActiveStructure(id) || []);
+		const activeNode = getActiveStructure(id);
+		if (activeNode === undefined) {
+			setCurrentStructure([]);
+			setNodeHistory([]);
+			return;
+		}
+		setCurrentStructure(activeNode.structure);
+		setNodeHistory(activeNode.path);
 	};
 
 	const getActiveStructure = (nodeId: number | null) => {
 		if (nodeId === null) {
-			return [...activeStructure];
+			return { structure: [...activeStructure], path: [] };
 		}
 		return findNodeById(nodeId, activeStructure);
 	};
 
 	const findNodeById = (
 		id: number,
-		nodes: NodeType[]
-	): Page | NodeType[] | undefined => {
+		nodes: NodeType[],
+		path: NodeType[] = []
+	): { structure: Page | NodeType[]; path: NodeType[] } | undefined => {
 		for (const node of nodes) {
+			const currentPath = [...path, node];
 			if (node.id === id) {
-				if (node.type === 'page') return node;
-				if (node.type === 'folder') return node.children ?? [];
+				if (node.type === 'page') return { structure: node, path: currentPath };
+				if (node.type === 'folder')
+					return { structure: node.children ?? [], path: currentPath };
 			}
 
 			// Traverse deeper if this is a folder
 			if (node.type === 'folder' && node.children) {
-				const result = findNodeById(id, node.children);
+				const result = findNodeById(id, node.children, currentPath);
 				if (result !== undefined) {
 					return result; // Only return if something was actually found
 				}
@@ -77,7 +93,7 @@ const TreeContextProvider = ({
 				structure: currentStructure,
 				activeNodeId,
 				selectNode,
-				activeNodeIdPath,
+				nodeHistory,
 			}}
 		>
 			{children}
