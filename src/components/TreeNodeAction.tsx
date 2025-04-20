@@ -2,19 +2,14 @@ import { useTreeContext } from './TreeContext';
 import { NodeType } from './TreeView';
 
 export type TreeNodeActionProps = {
-	parentNode?: NodeType;
 	node: NodeType;
 };
 
-const TreeNodeAction = ({ node, parentNode }: TreeNodeActionProps) => {
+const TreeNodeAction = ({ node }: TreeNodeActionProps) => {
 	const { activeNodeId, selectNode, activeNodeIdPath } = useTreeContext();
 
 	const handleOnClick = () => {
-		if (activeNodeId === node.id) {
-			selectNode(null, parentNode?.id || null);
-		} else {
-			selectNode(node.id, parentNode?.id || null);
-		}
+		selectNode(node.id);
 	};
 
 	return (
