@@ -1,5 +1,5 @@
 'use client';
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { NodeType, Page } from './TreeView';
 import _ from 'lodash';
 
@@ -101,6 +101,10 @@ const TreeContextProvider = ({
 			setActiveStructure(tempActiveStructure);
 			setCurrentStructure(tempCurrentStructure);
 			// Save this in the local storage
+			localStorage.setItem(
+				'treeStructure',
+				JSON.stringify(tempActiveStructure)
+			);
 			return;
 		}
 
@@ -123,9 +127,24 @@ const TreeContextProvider = ({
 
 			setCurrentStructure(tempCurrentStructure);
 			setActiveStructure(tempActiveStructure);
+			localStorage.setItem(
+				'treeStructure',
+				JSON.stringify(tempActiveStructure)
+			);
 		}
 	};
 	// Have a useEffect here to fetch structure from the local storage if needed when mounting
+	useEffect(() => {
+		const storedStructure = JSON.parse(
+			localStorage.getItem('treeStructure') || '""'
+		);
+
+		if (storedStructure !== '') {
+			console.log('Stored structure:', storedStructure);
+			setActiveStructure(storedStructure);
+		}
+	}, []);
+
 	return (
 		<TreeContext.Provider
 			value={{
