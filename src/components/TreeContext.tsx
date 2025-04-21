@@ -1,12 +1,14 @@
 'use client';
 import { createContext, useContext, useState } from 'react';
 import { NodeType, Page } from './TreeView';
+import _ from 'lodash';
 
 type TreeContextType = {
 	structure: NodeType[] | Page;
 	activeNodeId: number | null;
 	selectNode: (id: number | null) => void;
 	nodeHistory: NodeType[];
+	createNode: (node: NodeType) => void;
 };
 
 const TreeContext = createContext<TreeContextType | null>(null);
@@ -20,7 +22,7 @@ const TreeContextProvider = ({
 	structure,
 	children,
 }: TreeContextProviderProps) => {
-	const [activeStructure] = useState<NodeType[]>(structure);
+	const [activeStructure, setActiveStructure] = useState<NodeType[]>(structure);
 	const [activeNodeId, setActiveNodeId] = useState<number | null>(null);
 	const [nodeHistory, setNodeHistory] = useState<NodeType[]>([]);
 	const [currentStructure, setCurrentStructure] = useState<NodeType[] | Page>(
@@ -86,6 +88,43 @@ const TreeContextProvider = ({
 
 		return undefined; // Return only after checking all nodes
 	};
+
+	const createNode = (node: NodeType) => {
+		// If the current structure is a page, we can't create a node
+		if (!Array.isArray(currentStructure)) {
+			return;
+		}
+		if (activeNodeId === null) {
+			// Node should be created at the root level
+			const tempActiveStructure = [...activeStructure, node];
+			const tempCurrentStructure = [...currentStructure, node];
+			setActiveStructure(tempActiveStructure);
+			setCurrentStructure(tempCurrentStructure);
+			// Save this in the local storage
+			return;
+		}
+
+		const activeNode = findNodeById(activeNodeId, activeStructure);
+
+		if (activeNode === undefined) {
+			return;
+		}
+
+		if (Array.isArray(activeNode.structure)) {
+			const tempCurrentStructure = [...currentStructure, node];
+			const tempActiveStructure = _.cloneDeepWith(activeStructure, (value) => {
+				return value.id === activeNodeId
+					? {
+							...value,
+							children: value.children ? [...value.children, node] : [node],
+					  }
+					: _.noop();
+			});
+
+			setCurrentStructure(tempCurrentStructure);
+			setActiveStructure(tempActiveStructure);
+		}
+	};
 	// Have a useEffect here to fetch structure from the local storage if needed when mounting
 	return (
 		<TreeContext.Provider
@@ -94,6 +133,7 @@ const TreeContextProvider = ({
 				activeNodeId,
 				selectNode,
 				nodeHistory,
+				createNode,
 			}}
 		>
 			{children}

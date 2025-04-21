@@ -3,6 +3,7 @@ import TreeNode from './TreeNode';
 import { useTreeContext } from './TreeContext';
 import TreeNodeAction from './TreeNodeAction';
 import Breadcrumbs from './Breadcrumbs';
+import NewTreeNodeDialog from './NewTreeNodeDialog';
 
 export type Page = {
 	id: number;
@@ -34,9 +35,9 @@ const TreeView = () => {
 	return (
 		<div>
 			<Breadcrumbs />
-			{/* <div>
-				<button>+</button>
-			</div> */}
+			<div>
+				<NewTreeNodeDialog />
+			</div>
 			{structure.map((node) => {
 				return (
 					<TreeNode
