@@ -1,6 +1,8 @@
 import React from 'react';
 import { NodeType } from './TreeView';
 import TreeNodeAction from './TreeNodeAction';
+import { CSS } from '@dnd-kit/utilities';
+import { useSortable } from '@dnd-kit/sortable';
 // import { useTreeContext } from './TreeContext';
 
 type TreeNodeProps = {
@@ -8,31 +10,22 @@ type TreeNodeProps = {
 };
 const TreeNode = ({ node }: TreeNodeProps) => {
 	// const { activeNodeIdPath } = useTreeContext();
+	const { attributes, listeners, setNodeRef, transform, transition } =
+		useSortable({ id: node.id });
+
+	const style = {
+		transition,
+		transform: CSS.Transform.toString(transform),
+	};
 
 	return (
-		<div>
-			<TreeNodeAction node={node} />
-			{/* {activeNodeIdPath.findIndex((item) => item === node.id) >= 0 &&
-				childNodes?.map((childNode) => {
-					if (childNode.type === 'folder') {
-						return (
-							<TreeNode
-								key={childNode.id}
-								node={childNode}
-								childNodes={childNode.children}
-								parentNode={node}
-							/>
-						);
-					}
-					return (
-						<TreeNodeAction
-							key={childNode.id}
-							node={childNode}
-							parentNode={node}
-						/>
-					);
-				})} */}
-		</div>
+		<TreeNodeAction
+			node={node}
+			ref={setNodeRef}
+			attributes={attributes}
+			listners={listeners}
+			style={style}
+		/>
 	);
 };
 

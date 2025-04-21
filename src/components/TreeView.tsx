@@ -1,9 +1,20 @@
 'use client';
 import TreeNode from './TreeNode';
 import { useTreeContext } from './TreeContext';
-import TreeNodeAction from './TreeNodeAction';
 import Breadcrumbs from './Breadcrumbs';
 import NewTreeNodeDialog from './NewTreeNodeDialog';
+import {
+	SortableContext,
+	verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import {
+	closestCorners,
+	DndContext,
+	DragEndEvent,
+	PointerSensor,
+	useSensor,
+	useSensors,
+} from '@dnd-kit/core';
 
 export type Page = {
 	id: number;
@@ -21,32 +32,57 @@ export type Folder = {
 };
 
 const TreeView = () => {
-	const { structure } = useTreeContext();
+	const { structure, reOrderNodes } = useTreeContext();
+
+	const sensors = useSensors(
+		useSensor(PointerSensor, {
+			activationConstraint: {
+				distance: 8,
+			},
+		})
+	);
+
+	const handleDragEnd = (event: DragEndEvent) => {
+		const { active, over } = event;
+		if (over === null) return;
+		if (active.id === over.id) return;
+
+		reOrderNodes(active.id as number, over.id as number);
+	};
 
 	if (!Array.isArray(structure)) {
 		// This should be the page viewer
 		return (
 			<div>
 				<Breadcrumbs />
-				<TreeNodeAction node={structure} />
+				<h1>{structure.title}</h1>
 			</div>
 		);
 	}
 	return (
 		<div>
 			<Breadcrumbs />
-			<div>
-				<NewTreeNodeDialog />
-			</div>
-			{structure.map((node) => {
-				return (
-					<TreeNode
-						key={node.id}
-						node={node}
-						//childNodes={node.type === 'folder' ? node.children : []}
-					/>
-				);
-			})}
+			<NewTreeNodeDialog />
+			<DndContext
+				collisionDetection={closestCorners}
+				onDragEnd={handleDragEnd}
+				sensors={sensors}
+			>
+				<SortableContext
+					items={structure}
+					strategy={verticalListSortingStrategy}
+				>
+					{structure.map((node) => {
+						return (
+							<TreeNode
+								key={node.id}
+								node={node}
+								//childNodes={node.type === 'folder' ? node.children : []}
+							/>
+						);
+					})}
+				</SortableContext>
+			</DndContext>
 		</div>
 	);
 };

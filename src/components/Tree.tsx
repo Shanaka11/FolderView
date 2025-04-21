@@ -1,5 +1,4 @@
 'use client';
-
 import { TreeContextProvider } from './TreeContext';
 import TreeView, { NodeType } from './TreeView';
 

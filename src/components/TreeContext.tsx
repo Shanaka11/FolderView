@@ -9,6 +9,7 @@ type TreeContextType = {
 	selectNode: (id: number | null) => void;
 	nodeHistory: NodeType[];
 	createNode: (node: NodeType) => void;
+	reOrderNodes: (activeId: number, overId: number) => void;
 };
 
 const TreeContext = createContext<TreeContextType | null>(null);
@@ -133,6 +134,45 @@ const TreeContextProvider = ({
 			);
 		}
 	};
+
+	const reOrderNodes = (activeId: number, overId: number) => {
+		if (!Array.isArray(currentStructure)) return;
+
+		// find the index of the activeId and overId in the currentStructure
+		const activeIndex = currentStructure.findIndex(
+			(node) => node.id === activeId
+		);
+		const overIndex = currentStructure.findIndex((node) => node.id === overId);
+		if (activeIndex === -1 || overIndex === -1) return;
+
+		// create a new array with the nodes in the new order
+		const newStructure = [...currentStructure];
+		const [activeNode] = newStructure.splice(activeIndex, 1);
+		newStructure.splice(overIndex, 0, activeNode);
+		// set the new structure
+		setCurrentStructure(newStructure);
+
+		// Save in the local storage
+		if (activeNodeId === null) {
+			const tempActiveStructure = [...newStructure];
+			setActiveStructure(tempActiveStructure);
+			localStorage.setItem(
+				'treeStructure',
+				JSON.stringify(tempActiveStructure)
+			);
+			return;
+		}
+		const tempActiveStructure = _.cloneDeepWith(activeStructure, (value) => {
+			return value.id === activeNodeId
+				? {
+						...value,
+						children: [...newStructure],
+				  }
+				: _.noop();
+		});
+		setActiveStructure(tempActiveStructure);
+		localStorage.setItem('treeStructure', JSON.stringify(tempActiveStructure));
+	};
 	// Have a useEffect here to fetch structure from the local storage if needed when mounting
 	useEffect(() => {
 		const storedStructure = JSON.parse(
@@ -145,6 +185,10 @@ const TreeContextProvider = ({
 		}
 	}, []);
 
+	useEffect(() => {
+		selectNode(activeNodeId);
+	}, [activeStructure]);
+
 	return (
 		<TreeContext.Provider
 			value={{
@@ -153,6 +197,7 @@ const TreeContextProvider = ({
 				selectNode,
 				nodeHistory,
 				createNode,
+				reOrderNodes,
 			}}
 		>
 			{children}
