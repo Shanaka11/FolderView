@@ -62,7 +62,7 @@ export const structure: NodeType[] = [
 
 export default function Home() {
 	return (
-		<div>
+		<div className='px-4 py-4'>
 			<Tree structure={structure} />
 		</div>
 	);

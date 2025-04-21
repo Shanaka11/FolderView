@@ -60,29 +60,31 @@ const TreeView = () => {
 		);
 	}
 	return (
-		<div>
-			<Breadcrumbs />
+		<div className='flex flex-col gap-3'>
 			<NewTreeNodeDialog />
-			<DndContext
-				collisionDetection={closestCorners}
-				onDragEnd={handleDragEnd}
-				sensors={sensors}
-			>
-				<SortableContext
-					items={structure}
-					strategy={verticalListSortingStrategy}
+			<Breadcrumbs />
+			<div>
+				<DndContext
+					collisionDetection={closestCorners}
+					onDragEnd={handleDragEnd}
+					sensors={sensors}
 				>
-					{structure.map((node) => {
-						return (
-							<TreeNode
-								key={node.id}
-								node={node}
-								//childNodes={node.type === 'folder' ? node.children : []}
-							/>
-						);
-					})}
-				</SortableContext>
-			</DndContext>
+					<SortableContext
+						items={structure}
+						strategy={verticalListSortingStrategy}
+					>
+						{structure.map((node) => {
+							return (
+								<TreeNode
+									key={node.id}
+									node={node}
+									//childNodes={node.type === 'folder' ? node.children : []}
+								/>
+							);
+						})}
+					</SortableContext>
+				</DndContext>
+			</div>
 		</div>
 	);
 };
